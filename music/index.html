@@ -5,27 +5,50 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Music Round</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       /* Use Poppins for the UI */
-      body { font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+      body {
+        font-family: "Poppins", ui-sans-serif, system-ui, -apple-system,
+          "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      }
       /* (glitter ball removed) */
       /* Answer fade animation */
       @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(6px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
-      .fade-in { animation: fadeIn 260ms cubic-bezier(.2,.9,.3,1) both; }
+      .fade-in {
+        animation: fadeIn 260ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+      }
       @keyframes fadeOut {
-        from { opacity: 1; transform: translateY(0); }
-        to { opacity: 0; transform: translateY(6px); }
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(6px);
+        }
       }
-      .fade-out { animation: fadeOut 260ms cubic-bezier(.2,.9,.3,1) both; }
+      .fade-out {
+        animation: fadeOut 260ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+      }
 
       /* Redaction: heavy animated blur + dark overlay to fully obscure text.
          Transitions animate the blur and overlay opacity over 1s when
          revealing or hiding the answer. */
-      #answer { position: relative; /* animate filter changes */
+      #answer {
+        position: relative; /* animate filter changes */
         transition: filter 1000ms ease, -webkit-filter 1000ms ease;
         padding-top: 0.75rem; /* extra spacing above */
         padding-bottom: 0.75rem; /* extra spacing below */
@@ -48,11 +71,18 @@
         filter: blur(14px) saturate(0.6) contrast(0.85);
         -webkit-filter: blur(14px) saturate(0.6) contrast(0.85);
       }
-      .redacted::after { opacity: 1; }
+      .redacted::after {
+        opacity: 1;
+      }
 
       /* helper to disable transitions when we need to immediately redact (e.g., on track change) */
-      #answer.no-transition { transition: none !important; -webkit-transition: none !important; }
-      #answer.no-transition::after { transition: none !important; }
+      #answer.no-transition {
+        transition: none !important;
+        -webkit-transition: none !important;
+      }
+      #answer.no-transition::after {
+        transition: none !important;
+      }
       /* Vinyl spinner styles */
       @keyframes spin {
         from {
@@ -94,7 +124,7 @@
     <main
       class="w-full max-w-2xl bg-gradient-to-br from-gray-800 to-gray-700/60 shadow-lg rounded-2xl p-6 md:p-10"
     >
-    <div class="mb-4 text-sm">
+      <div class="mb-4 text-sm">
         <a
           href="../index.html"
           class="text-gray-300 hover:text-gray-100 hover:underline"
@@ -102,10 +132,10 @@
           >← Back</a
         >
       </div>
-      
-      <header class="flex items-center justify-between mb-6">
+
+      <!-- <header class="flex items-center justify-between mb-6">
         <h1 class="text-2xl md:text-3xl font-semibold">Music Round</h1>
-      </header>
+      </header> -->
 
       <section class="grid gap-4 md:items-end">
         <div class="md:col-span-3">
@@ -116,7 +146,14 @@
               aria-label="Play"
             >
               <!-- play icon (replaced by JS when playing/paused) -->
-              <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <svg
+                id="playIcon"
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
                 <path d="M8 5v14l11-7z" />
               </svg>
             </button>
@@ -132,7 +169,7 @@
               id="revealBtn"
               class="bg-pink-600 hover:bg-pink-500 active:scale-[0.99] text-white rounded-lg px-4 py-3 shadow w-full sm:w-auto mt-3 sm:mt-0"
             >
-              👀 Reveal Answer
+              Show Answer
             </button>
           </div>
         </div>
@@ -140,7 +177,7 @@
 
       <div
         id="answer"
-        class="mt-6 text-center text-6xl md:text-4xl font-bold text-pink-400"
+        class="mt-6 text-center text-4xl md:text-6xl font-bold text-pink-400"
       ></div>
 
       <!-- Playback progress + simple equalizer -->
@@ -161,14 +198,24 @@
         </div>
 
         <div class="mt-3 flex items-center gap-3">
-          <div class="flex items-center gap-3">
+          <!-- <div class="flex items-center gap-3">
               <span id="playingLabel" class="text-sm text-gray-300">Stopped</span>
             </div>
-          </div>
+          </div> -->
 
           <div class="w-full mt-4 flex items-center justify-center gap-3">
-            <button id="prevBtn" class="bg-gray-800 hover:bg-gray-700 text-gray-100 rounded-lg px-4 py-2 shadow flex-1">‹ Prev</button>
-            <button id="nextBtn" class="bg-gray-800 hover:bg-gray-700 text-gray-100 rounded-lg px-4 py-2 shadow flex-1">Next ›</button>
+            <button
+              id="prevBtn"
+              class="bg-gray-800 hover:bg-gray-700 text-gray-100 rounded-lg px-4 py-2 shadow flex-1"
+            >
+              ‹ Prev
+            </button>
+            <button
+              id="nextBtn"
+              class="bg-gray-800 hover:bg-gray-700 text-gray-100 rounded-lg px-4 py-2 shadow flex-1"
+            >
+              Next ›
+            </button>
           </div>
         </div>
       </section>
@@ -189,24 +236,52 @@
       // Tracks definition: add new entries here to expand the list
       // Each option will be shown as "Track X" where X is the 1-based index
       const TRACKS = [
-          { file: 'Track1.mp3', title: 'Perfect 10', artist: 'The Beautiful South' },
-          { file: 'Track2.mp3', title: 'September', artist: 'Earth, Wind & Fire' },
-          { file: 'Track3.mp3', title: 'Hold On Tight', artist: 'Electric Light Orchestra' },
-          { file: 'Track4.mp3', title: 'Everybody Dance', artist: 'CHIC' },
-          { file: 'Track5.mp3', title: 'Doo Wah Diddy', artist: 'Manfred Mann' },
-          { file: 'Track6.mp3', title: 'Hallelujah I Love Her So', artist: 'Ray Charles' },
-          { file: 'Track7.mp3', title: 'A Thousand Miles', artist: 'Vanessa Carlton' },
-          { file: 'Track8.mp3', title: 'Boom! Shake The Room', artist: 'DJ Jazzy Jeff & The Fresh Prince' },
-          { file: 'Track9.mp3', title: 'Paradise By The Dashboard Light', artist: 'Meat Loaf' },
-          { file: 'Track10.mp3', title: 'Need You Tonight', artist: 'INXS' }
+        {
+          file: "Track1.mp3",
+          title: "Perfect 10",
+          artist: "The Beautiful South",
+        },
+        {
+          file: "Track2.mp3",
+          title: "September",
+          artist: "Earth, Wind & Fire",
+        },
+        {
+          file: "Track3.mp3",
+          title: "Hold On Tight",
+          artist: "Electric Light Orchestra",
+        },
+        { file: "Track4.mp3", title: "Everybody Dance", artist: "CHIC" },
+        { file: "Track5.mp3", title: "Doo Wah Diddy", artist: "Manfred Mann" },
+        {
+          file: "Track6.mp3",
+          title: "Hallelujah I Love Her So",
+          artist: "Ray Charles",
+        },
+        {
+          file: "Track7.mp3",
+          title: "A Thousand Miles",
+          artist: "Vanessa Carlton",
+        },
+        {
+          file: "Track8.mp3",
+          title: "Boom! Shake The Room",
+          artist: "DJ Jazzy Jeff & The Fresh Prince",
+        },
+        {
+          file: "Track9.mp3",
+          title: "Paradise By The Dashboard Light",
+          artist: "Meat Loaf",
+        },
+        { file: "Track10.mp3", title: "Need You Tonight", artist: "INXS" },
       ];
 
       // Populate the select from TRACKS so it's easier to update later
       (function populateTracks() {
         if (!select) return;
-        select.innerHTML = '';
+        select.innerHTML = "";
         TRACKS.forEach((t, idx) => {
-          const opt = document.createElement('option');
+          const opt = document.createElement("option");
           opt.value = t.file;
           // display as "Track X" where X is the 1-based index
           opt.textContent = `Track ${idx + 1}`;
@@ -222,8 +297,10 @@
       redactAnswer();
 
       // SVG icons for play/pause
-      const PLAY_SVG = '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
-      const PAUSE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+      const PLAY_SVG =
+        '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+      const PAUSE_SVG =
+        '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
 
       function formatTime(seconds) {
         if (!isFinite(seconds)) return "0:00";
@@ -279,24 +356,31 @@
         const title = opt ? opt.dataset.title : "";
         const artist = opt ? opt.dataset.artist : "";
         // Show title on one line and artist below it
-        answerBox.innerHTML = `${title ? `<div class="answer-title mb-4">${title}</div>` : ''}` +
-          `${artist ? `<div class="answer-artist text-4xl text-gray-300">${artist}</div>` : ''}`;
+        answerBox.innerHTML =
+          `${title ? `<div class="answer-title mb-2">${title}</div>` : ""}` +
+          `${
+            artist
+              ? `<div class="answer-artist text-2xl text-gray-300">${artist}</div>`
+              : ""
+          }`;
         // clear any reveal animation classes and apply redaction immediately
         // disable transitions briefly so the redaction is instant on load
-        answerBox.classList.add('no-transition');
-        answerBox.classList.remove('fade-in');
-        answerBox.classList.add('redacted');
+        answerBox.classList.add("no-transition");
+        answerBox.classList.remove("fade-in");
+        answerBox.classList.add("redacted");
         // force a reflow so the no-transition takes effect, then restore transitions
         requestAnimationFrame(() => {
-          requestAnimationFrame(() => answerBox.classList.remove('no-transition'));
+          requestAnimationFrame(() =>
+            answerBox.classList.remove("no-transition")
+          );
         });
       }
 
       // Reveal animation: slide the overlay away and then remove the overlay class
       function revealAnswerAnimated() {
-        if (!answerBox.classList.contains('redacted')) return;
+        if (!answerBox.classList.contains("redacted")) return;
         // removing the `.redacted` class will animate the blur/overlay over 3s
-        answerBox.classList.remove('redacted');
+        answerBox.classList.remove("redacted");
       }
 
       // Re-apply redaction with an entry animation
@@ -305,30 +389,37 @@
         const opt = select.selectedOptions[0];
         const title = opt ? opt.dataset.title : "";
         const artist = opt ? opt.dataset.artist : "";
-        answerBox.innerHTML = `${title ? `<div class="answer-title">${title}</div>` : ''}` +
-          `${artist ? `<div class="answer-artist text-sm text-gray-300">${artist}</div>` : ''}`;
+        answerBox.innerHTML =
+          `${title ? `<div class="answer-title">${title}</div>` : ""}` +
+          `${
+            artist
+              ? `<div class="answer-artist text-sm text-gray-300">${artist}</div>`
+              : ""
+          }`;
         // animate into the redacted state over 3s
-        answerBox.classList.remove('fade-in');
+        answerBox.classList.remove("fade-in");
         // ensure transitions are enabled so the blur animates in
-        answerBox.classList.remove('no-transition');
+        answerBox.classList.remove("no-transition");
         // apply redacted which will animate filter & overlay opacity over 3s
         // (previously we used an immediate redaction; here we animate)
         // For selection changes we use a temporary no-transition elsewhere.
-        answerBox.classList.add('redacted');
+        answerBox.classList.add("redacted");
       }
 
       document.getElementById("revealBtn").onclick = (e) => {
         const btn = e.currentTarget;
-        const isCurrentlyRedacted = answerBox.classList.contains('redacted') || answerBox.classList.contains('redacting');
+        const isCurrentlyRedacted =
+          answerBox.classList.contains("redacted") ||
+          answerBox.classList.contains("redacting");
         if (isCurrentlyRedacted) {
           // reveal
           revealAnswerAnimated();
-          btn.textContent = "🙈 Hide Answer";
+          btn.textContent = "Hide Answer";
           btn.setAttribute("aria-pressed", "true");
         } else {
           // redact again (animated)
           redactAnswerAnimated();
-          btn.textContent = "👀 Reveal Answer";
+          btn.textContent = "Show Answer";
           btn.setAttribute("aria-pressed", "false");
         }
       };
@@ -381,24 +472,26 @@
         playBtn.innerHTML = PLAY_SVG;
         playBtn.setAttribute("aria-label", "Play");
         // ensure answer animation is reset when changing tracks
-        answerBox.classList.remove('fade-in');
+        answerBox.classList.remove("fade-in");
       });
 
       // Prev / Next change the dropdown selection (do not autoplay)
-      const prevBtn = document.getElementById('prevBtn');
-      const nextBtn = document.getElementById('nextBtn');
-      if (prevBtn) prevBtn.addEventListener('click', () => {
-        const len = select.options.length;
-        if (!len) return;
-        select.selectedIndex = (select.selectedIndex - 1 + len) % len;
-        select.dispatchEvent(new Event('change'));
-      });
-      if (nextBtn) nextBtn.addEventListener('click', () => {
-        const len = select.options.length;
-        if (!len) return;
-        select.selectedIndex = (select.selectedIndex + 1) % len;
-        select.dispatchEvent(new Event('change'));
-      });
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      if (prevBtn)
+        prevBtn.addEventListener("click", () => {
+          const len = select.options.length;
+          if (!len) return;
+          select.selectedIndex = (select.selectedIndex - 1 + len) % len;
+          select.dispatchEvent(new Event("change"));
+        });
+      if (nextBtn)
+        nextBtn.addEventListener("click", () => {
+          const len = select.options.length;
+          if (!len) return;
+          select.selectedIndex = (select.selectedIndex + 1) % len;
+          select.dispatchEvent(new Event("change"));
+        });
 
       player.addEventListener("timeupdate", () => {
         const pct = player.duration
