@@ -116,7 +116,7 @@
               id="revealBtn"
               class="bg-pink-600 hover:bg-pink-500 active:scale-[0.99] text-white rounded-lg px-4 py-3 shadow w-full sm:w-auto mt-3 sm:mt-0"
             >
-              👀 Reveal Answer
+              Show Answer
             </button>
           </div>
         </div>
@@ -236,11 +236,11 @@
           answerBox.classList.contains("redacting");
         if (isCurrentlyRedacted) {
           revealAnswerAnimated();
-          btn.textContent = "🙈 Hide Answer";
+          btn.textContent = "Hide Answer";
           btn.setAttribute("aria-pressed", "true");
         } else {
           redactAnswerAnimated();
-          btn.textContent = "👀 Reveal Answer";
+          btn.textContent = "Show Answer";
           btn.setAttribute("aria-pressed", "false");
         }
       };
