@@ -180,6 +180,24 @@
         class="mt-6 text-center text-4xl md:text-6xl font-bold text-pink-400"
       ></div>
 
+      <div class="mt-4 flex justify-center">
+        <button
+          id="playFullBtn"
+          class="hidden mx-auto bg-pink-600 hover:bg-pink-500 text-white rounded-lg px-4 py-2 shadow flex items-center justify-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          <span class="play-full-label">Play</span>
+        </button>
+      </div>
+
       <!-- Playback progress + simple equalizer -->
       <section class="mt-6">
         <div class="flex items-center gap-3">
@@ -238,42 +256,64 @@
       const TRACKS = [
         {
           file: "Track1.mp3",
+          full: "Track1.mp3",
           title: "Perfect 10",
           artist: "The Beautiful South",
         },
         {
           file: "Track2.mp3",
+          full: "Track2.mp3",
           title: "September",
           artist: "Earth, Wind & Fire",
         },
         {
           file: "Track3.mp3",
+          full: "Track3.mp3",
           title: "Hold On Tight",
           artist: "Electric Light Orchestra",
         },
-        { file: "Track4.mp3", title: "Everybody Dance", artist: "CHIC" },
-        { file: "Track5.mp3", title: "Doo Wah Diddy", artist: "Manfred Mann" },
+        {
+          file: "Track4.mp3",
+          full: "Track4.mp3",
+          title: "Everybody Dance",
+          artist: "CHIC",
+        },
+        {
+          file: "Track5.mp3",
+          full: "Track5.mp3",
+          title: "Doo Wah Diddy",
+          artist: "Manfred Mann",
+        },
         {
           file: "Track6.mp3",
+          full: "Track6.mp3",
           title: "Hallelujah I Love Her So",
           artist: "Ray Charles",
         },
         {
           file: "Track7.mp3",
+          full: "Track7.mp3",
           title: "A Thousand Miles",
           artist: "Vanessa Carlton",
         },
         {
           file: "Track8.mp3",
+          full: "Track8.mp3",
           title: "Boom! Shake The Room",
           artist: "DJ Jazzy Jeff & The Fresh Prince",
         },
         {
           file: "Track9.mp3",
+          full: "Track9.mp3",
           title: "Paradise By The Dashboard Light",
           artist: "Meat Loaf",
         },
-        { file: "Track10.mp3", title: "Need You Tonight", artist: "INXS" },
+        {
+          file: "Track10.mp3",
+          full: "Track10.mp3",
+          title: "Need You Tonight",
+          artist: "INXS",
+        },
       ];
 
       // Populate the select from TRACKS so it's easier to update later
@@ -287,6 +327,7 @@
           opt.textContent = `Track ${idx + 1}`;
           if (t.title) opt.dataset.title = t.title;
           if (t.artist) opt.dataset.artist = t.artist;
+          if (t.full) opt.dataset.full = t.full;
           select.appendChild(opt);
         });
         // keep first track selected by default
@@ -311,16 +352,38 @@
         return `${m}:${s}`;
       }
 
-      // Play / pause toggle. If a new track is chosen, load from start.
-      playBtn.onclick = () => {
-        const file = select.value;
-        if (player.dataset.file !== file) {
-          player.src = `files/${file}`;
-          player.dataset.file = file;
-          player.currentTime = 0;
+      // Helper: set player source for the currently selected option.
+      // mode = 'preview' (files/) or 'full' (full/)
+      function setPlayerForCurrentSelection(mode, shouldPlay) {
+        const opt = select.selectedOptions[0];
+        if (!opt) return;
+        const filename = opt.value;
+        const fullFilename = opt.dataset.full || filename;
+        const desiredSrc =
+          mode === "full" ? `full/${fullFilename}` : `files/${filename}`;
+        const wasPlaying = !player.paused && !player.ended;
+        if (player.dataset.src !== desiredSrc) {
+          try {
+            player.pause();
+            player.currentTime = 0;
+          } catch (e) {}
+          player.src = desiredSrc;
+          player.dataset.src = desiredSrc;
+          if (shouldPlay || wasPlaying) {
+            player.play().catch(() => {});
+          }
+        } else if (shouldPlay && player.paused) {
+          player.play().catch(() => {});
         }
-        if (player.paused) player.play();
-        else player.pause();
+      }
+
+      // Play / pause toggle. Uses preview (files/) source.
+      playBtn.onclick = () => {
+        if (player.paused) {
+          setPlayerForCurrentSelection("preview", true);
+        } else {
+          player.pause();
+        }
       };
 
       function selectAndPlay(index) {
@@ -335,16 +398,8 @@
         revealBtn.textContent = "Show Answer";
         revealBtn.setAttribute("aria-pressed", "false");
 
-        // Load and play the selected file
-        const opt = select.selectedOptions[0];
-        const file = opt.value;
-        try {
-          player.pause();
-          player.currentTime = 0;
-        } catch (e) {}
-        player.src = `tracks/${file}`;
-        player.dataset.file = file;
-        player.play();
+        // Load and play the selected file (preview)
+        setPlayerForCurrentSelection("preview", true);
       }
 
       // prev/next controls removed — navigation can be done with the select
@@ -374,6 +429,12 @@
             answerBox.classList.remove("no-transition")
           );
         });
+        // ensure preview is the active source and hide the full-play button
+        try {
+          setPlayerForCurrentSelection("preview", false);
+        } catch (e) {}
+        const playFullBtn = document.getElementById("playFullBtn");
+        if (playFullBtn) playFullBtn.classList.add("hidden");
       }
 
       // Reveal animation: slide the overlay away and then remove the overlay class
@@ -381,6 +442,26 @@
         if (!answerBox.classList.contains("redacted")) return;
         // removing the `.redacted` class will animate the blur/overlay over 3s
         answerBox.classList.remove("redacted");
+        // switch player to the full track (do not autoplay unless already playing)
+        try {
+          setPlayerForCurrentSelection("full", false);
+        } catch (e) {}
+        // reveal the full-play button and set its label depending on play state
+        const playFullBtn = document.getElementById("playFullBtn");
+        if (playFullBtn) {
+          if (
+            player.dataset.src &&
+            player.dataset.src.startsWith("full/") &&
+            !player.paused
+          ) {
+            playFullBtn.innerHTML =
+              PAUSE_SVG + ' <span class="play-full-label">Pause</span>';
+          } else {
+            playFullBtn.innerHTML =
+              PLAY_SVG + ' <span class="play-full-label">Play</span>';
+          }
+          playFullBtn.classList.remove("hidden");
+        }
       }
 
       // Re-apply redaction with an entry animation
@@ -404,6 +485,12 @@
         // (previously we used an immediate redaction; here we animate)
         // For selection changes we use a temporary no-transition elsewhere.
         answerBox.classList.add("redacted");
+        // when re-redacting, ensure preview source and hide full-play
+        try {
+          setPlayerForCurrentSelection("preview", false);
+        } catch (e) {}
+        const playFullBtn = document.getElementById("playFullBtn");
+        if (playFullBtn) playFullBtn.classList.add("hidden");
       }
 
       document.getElementById("revealBtn").onclick = (e) => {
@@ -424,17 +511,65 @@
         }
       };
 
+      // Play full-track button handler (toggle play/pause for the full track)
+      const playFullBtn = document.getElementById("playFullBtn");
+      if (playFullBtn) {
+        playFullBtn.addEventListener("click", () => {
+          const opt = select.selectedOptions[0];
+          if (!opt) return;
+          const fullFilename = opt.dataset.full || opt.value;
+          const fullSrc = `full/${fullFilename}`;
+
+          // If the player is already loaded with the full track, toggle play/pause
+          if (player.dataset.src === fullSrc) {
+            if (player.paused) {
+              player.play().catch(() => {});
+              playFullBtn.innerHTML =
+                PAUSE_SVG + ' <span class="play-full-label">Pause</span>';
+            } else {
+              player.pause();
+              playFullBtn.innerHTML =
+                PLAY_SVG + ' <span class="play-full-label">Play</span>';
+            }
+            return;
+          }
+
+          // Otherwise, switch to the full track and start playing from the beginning
+          setPlayerForCurrentSelection("full", true);
+          playFullBtn.innerHTML =
+            PAUSE_SVG + ' <span class="play-full-label">Pause</span>';
+        });
+      }
+
       // Playback UI updates
       player.addEventListener("play", () => {
         // swap to pause icon + accessible label
         playBtn.innerHTML = PAUSE_SVG;
         playBtn.setAttribute("aria-label", "Pause");
         playingLabel.textContent = "Playing";
+        // If we're playing a full track, update the playFullBtn label
+        try {
+          if (player.dataset.src && player.dataset.src.startsWith("full/")) {
+            if (playFullBtn) {
+              playFullBtn.innerHTML =
+                PAUSE_SVG + ' <span class="play-full-label">Pause</span>';
+              playFullBtn.classList.remove("hidden");
+            }
+          }
+        } catch (e) {}
       });
       player.addEventListener("pause", () => {
         playBtn.innerHTML = PLAY_SVG;
         playBtn.setAttribute("aria-label", "Play");
         playingLabel.textContent = "Paused";
+        // If the paused source is a full track, update the playFullBtn label
+        try {
+          if (player.dataset.src && player.dataset.src.startsWith("full/")) {
+            if (playFullBtn)
+              playFullBtn.innerHTML =
+                PLAY_SVG + ' <span class="play-full-label">Play</span>';
+          }
+        } catch (e) {}
       });
       player.addEventListener("ended", () => {
         playBtn.innerHTML = PLAY_SVG;
@@ -452,18 +587,20 @@
         revealBtn.textContent = "Show Answer";
         revealBtn.setAttribute("aria-pressed", "false");
 
-        // Stop playback and reset player state
+        // Reset playback state: pause and reset time
         try {
           player.pause();
           player.currentTime = 0;
-          // Unload source so the new track isn't auto-played when the user
-          // changes the selection directly.
-          player.removeAttribute("src");
-          player.dataset.file = "";
-          player.load();
+          // Ensure the preview file is the active source for the newly selected track
+          setPlayerForCurrentSelection("preview", false);
+          player.dataset.file = select.value;
         } catch (e) {
           // ignore
         }
+
+        // Hide the Play Full Track button when switching tracks
+        const playFullBtn = document.getElementById("playFullBtn");
+        if (playFullBtn) playFullBtn.classList.add("hidden");
 
         // Reset progress UI
         progressFill.style.width = "0%";
