@@ -332,7 +332,7 @@
         // Reset reveal/answer UI: redact the answer (animated)
         redactAnswerAnimated();
         const revealBtn = document.getElementById("revealBtn");
-        revealBtn.textContent = "👀 Reveal Answer";
+        revealBtn.textContent = "Show Answer";
         revealBtn.setAttribute("aria-pressed", "false");
 
         // Load and play the selected file
@@ -357,7 +357,7 @@
         const artist = opt ? opt.dataset.artist : "";
         // Show title on one line and artist below it
         answerBox.innerHTML =
-          `${title ? `<div class="answer-title mb-2">${title}</div>` : ""}` +
+          `${title ? `<div class="answer-title">${title}</div>` : ""}` +
           `${
             artist
               ? `<div class="answer-artist text-2xl text-gray-300">${artist}</div>`
@@ -449,7 +449,7 @@
         // briefly showing the previous answer while the blur animates in.
         redactAnswer();
         const revealBtn = document.getElementById("revealBtn");
-        revealBtn.textContent = "👀 Reveal Answer";
+        revealBtn.textContent = "Show Answer";
         revealBtn.setAttribute("aria-pressed", "false");
 
         // Stop playback and reset player state
