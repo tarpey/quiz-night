@@ -429,8 +429,12 @@
             artist
               ? `<div class="answer-artist text-2xl text-gray-300">${artist}</div>`
               : ""
+          }` +
+          `${
+            year
+              ? `<div class="answer-year text-lg text-gray-400 mt-1">${year}</div>`
+              : ""
           }`
-          + `${year ? `<div class="answer-year text-lg text-gray-400 mt-1">${year}</div>` : ""}`
         );
       }
 
