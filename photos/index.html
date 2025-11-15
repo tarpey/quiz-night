@@ -44,21 +44,43 @@
       }
 
       #answer {
-        position: relative; /* animate filter changes */
-        transition: filter 1000ms ease, -webkit-filter 1000ms ease;
-        padding-top: 0.75rem; /* extra spacing above */
-        padding-bottom: 0.75rem; /* extra spacing below */
+        position: absolute; /* positioned over the photo */
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 360ms ease, filter 1000ms ease,
+          -webkit-filter 1000ms ease;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        pointer-events: none;
+        z-index: 10;
+        opacity: 1;
+      }
+      /* Hide the blurred answer entirely while redacted */
+      #answer.redacted {
+        opacity: 0;
       }
 
+      /* Disable the old answer pseudo-overlay (we use a darkening overlay on the photo when revealed) */
       #answer::after {
+        display: none;
+      }
+
+      /* Darken the photo when revealed to improve legibility. Photo wrapper receives .revealed */
+      #photoWrap::before {
         content: "";
         position: absolute;
         inset: 0;
-        background: rgba(0, 6, 20, 0.94);
+        background: rgba(0, 0, 0, 0.55);
         pointer-events: none;
-        z-index: 3;
+        z-index: 9;
         opacity: 0;
-        transition: opacity 1000ms ease;
+        transition: opacity 360ms ease;
+      }
+
+      #photoWrap.revealed::before {
+        opacity: 1;
       }
 
       .redacted {
@@ -122,19 +144,19 @@
         </div>
       </section>
 
-      <div class="mt-6 flex items-center justify-center">
+      <div class="mt-6 relative" id="photoWrap">
         <img
           id="photoDisplay"
           src="files/photo1.svg"
           alt="Photo"
           class="w-full h-96 object-cover rounded-xl"
         />
-      </div>
 
-      <div
-        id="answer"
-        class="mt-6 text-center text-4xl md:text-6xl font-bold text-pink-400"
-      ></div>
+        <div
+          id="answer"
+          class="absolute inset-0 flex items-center justify-center text-4xl md:text-6xl font-bold text-pink-400"
+        ></div>
+      </div>
 
       <section class="mt-6">
         <div class="w-full mt-4 flex items-center justify-center gap-3">
@@ -235,12 +257,16 @@
           answerBox.classList.contains("redacted") ||
           answerBox.classList.contains("redacting");
         if (isCurrentlyRedacted) {
+          // reveal: remove redaction and darken image for contrast
           revealAnswerAnimated();
+          if (photoWrap) photoWrap.classList.add("revealed");
           btn.textContent = "Hide Answer";
           btn.setAttribute("aria-pressed", "true");
         } else {
+          // hide: animate out and restore image
           redactAnswerAnimated();
-          btn.textContent = "Show Answer";
+          if (photoWrap) photoWrap.classList.remove("revealed");
+          btn.textContent = "👀 Reveal Answer";
           btn.setAttribute("aria-pressed", "false");
         }
       };
@@ -253,6 +279,9 @@
         const revealBtn = document.getElementById("revealBtn");
         revealBtn.textContent = "👀 Reveal Answer";
         revealBtn.setAttribute("aria-pressed", "false");
+        // remove any darkening overlay when changing selection
+        if (typeof photoWrap !== "undefined" && photoWrap)
+          photoWrap.classList.remove("revealed");
         setPhotoFromSelection();
       });
 
