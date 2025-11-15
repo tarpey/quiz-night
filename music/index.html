@@ -259,60 +259,70 @@
           full: "Track1.mp3",
           title: "Perfect 10",
           artist: "The Beautiful South",
+          year: 1998,
         },
         {
           file: "Track2.mp3",
           full: "Track2.mp3",
           title: "September",
           artist: "Earth, Wind & Fire",
+          year: 1978,
         },
         {
           file: "Track3.mp3",
           full: "Track3.mp3",
           title: "Hold On Tight",
           artist: "Electric Light Orchestra",
+          year: 1981,
         },
         {
           file: "Track4.mp3",
           full: "Track4.mp3",
           title: "Everybody Dance",
           artist: "CHIC",
+          year: 1978,
         },
         {
           file: "Track5.mp3",
           full: "Track5.mp3",
           title: "Doo Wah Diddy",
           artist: "Manfred Mann",
+          year: 1964,
         },
         {
           file: "Track6.mp3",
           full: "Track6.mp3",
           title: "Hallelujah I Love Her So",
           artist: "Ray Charles",
+          year: 1956,
         },
         {
           file: "Track7.mp3",
           full: "Track7.mp3",
           title: "A Thousand Miles",
           artist: "Vanessa Carlton",
+          year: 2002,
         },
         {
           file: "Track8.mp3",
           full: "Track8.mp3",
           title: "Boom! Shake The Room",
           artist: "DJ Jazzy Jeff & The Fresh Prince",
+          year: 1993,
         },
         {
           file: "Track9.mp3",
           full: "Track9.mp3",
           title: "Paradise By The Dashboard Light",
           artist: "Meat Loaf",
+          year: 1977,
         },
         {
           file: "Track10.mp3",
           full: "Track10.mp3",
           title: "Need You Tonight",
           artist: "INXS",
+          year: 1987,
         },
       ];
 
@@ -327,6 +337,7 @@
           opt.textContent = `Track ${idx + 1}`;
           if (t.title) opt.dataset.title = t.title;
           if (t.artist) opt.dataset.artist = t.artist;
+          if (t.year) opt.dataset.year = t.year;
           if (t.full) opt.dataset.full = t.full;
           select.appendChild(opt);
         });
@@ -334,7 +345,7 @@
         if (select.options.length) select.selectedIndex = 0;
       })();
 
-      // Redact the initial answer for the selected track on load
+      // Redact the initial answer for the selected track on load (keep content hidden until reveal)
       redactAnswer();
 
       // SVG icons for play/pause
@@ -406,23 +417,30 @@
 
       // Update reveal button behavior (toggle) kept as before
       // Redaction helper: show the answer text but covered by overlay
-      function redactAnswer() {
+      // Helper: build the answer HTML for the current selection
+      function renderAnswerHTML() {
         const opt = select.selectedOptions[0];
         const title = opt ? opt.dataset.title : "";
         const artist = opt ? opt.dataset.artist : "";
-        // Show title on one line and artist below it
-        answerBox.innerHTML =
+        const year = opt ? opt.dataset.year : "";
+        return (
           `${title ? `<div class="answer-title">${title}</div>` : ""}` +
           `${
             artist
               ? `<div class="answer-artist text-2xl text-gray-300">${artist}</div>`
               : ""
-          }`;
-        // clear any reveal animation classes and apply redaction immediately
-        // disable transitions briefly so the redaction is instant on load
+          }`
+          + `${year ? `<div class="answer-year text-lg text-gray-400 mt-1">${year}</div>` : ""}`
+        );
+      }
+
+      function redactAnswer() {
+        // Immediately hide the answer content and ensure the redacted state is set.
+        // We deliberately clear innerHTML so nothing is visible until reveal is clicked.
         answerBox.classList.add("no-transition");
         answerBox.classList.remove("fade-in");
         answerBox.classList.add("redacted");
+        answerBox.innerHTML = "";
         // force a reflow so the no-transition takes effect, then restore transitions
         requestAnimationFrame(() => {
           requestAnimationFrame(() =>
@@ -440,12 +458,16 @@
       // Reveal animation: slide the overlay away and then remove the overlay class
       function revealAnswerAnimated() {
         if (!answerBox.classList.contains("redacted")) return;
-        // removing the `.redacted` class will animate the blur/overlay over 3s
-        answerBox.classList.remove("redacted");
+        // populate content then remove redaction so it can animate in
+        answerBox.innerHTML = renderAnswerHTML();
         // switch player to the full track (do not autoplay unless already playing)
         try {
           setPlayerForCurrentSelection("full", false);
         } catch (e) {}
+        // trigger a reflow to ensure the browser picks up the new content before animation
+        // then remove the redacted class so CSS transform/opacity animate
+        requestAnimationFrame(() => answerBox.classList.remove("redacted"));
+
         // reveal the full-play button and set its label depending on play state
         const playFullBtn = document.getElementById("playFullBtn");
         if (playFullBtn) {
@@ -466,25 +488,24 @@
 
       // Re-apply redaction with an entry animation
       function redactAnswerAnimated() {
-        // ensure text present
-        const opt = select.selectedOptions[0];
-        const title = opt ? opt.dataset.title : "";
-        const artist = opt ? opt.dataset.artist : "";
-        answerBox.innerHTML =
-          `${title ? `<div class="answer-title">${title}</div>` : ""}` +
-          `${
-            artist
-              ? `<div class="answer-artist text-2xl text-gray-300">${artist}</div>`
-              : ""
-          }`;
-        // animate into the redacted state over 3s
-        answerBox.classList.remove("fade-in");
-        // ensure transitions are enabled so the blur animates in
+        // animate the answer out (slide up + fade), then clear content when done
+        // ensure transitions are enabled
         answerBox.classList.remove("no-transition");
-        // apply redacted which will animate filter & overlay opacity over 3s
-        // (previously we used an immediate redaction; here we animate)
-        // For selection changes we use a temporary no-transition elsewhere.
+        answerBox.classList.remove("fade-in");
+        // apply redacted which will animate transform & opacity
         answerBox.classList.add("redacted");
+
+        // after the transform/opacity transition ends, clear the innerHTML to hide content
+        const onTransEnd = (ev) => {
+          if (ev.propertyName !== "opacity" && ev.propertyName !== "transform")
+            return;
+          if (answerBox.classList.contains("redacted")) {
+            answerBox.innerHTML = "";
+          }
+          answerBox.removeEventListener("transitionend", onTransEnd);
+        };
+        answerBox.addEventListener("transitionend", onTransEnd);
+
         // when re-redacting, ensure preview source and hide full-play
         try {
           setPlayerForCurrentSelection("preview", false);
