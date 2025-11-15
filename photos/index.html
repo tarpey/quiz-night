@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Photos Round</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Use Poppins for the UI */
+      body {
+        font-family: "Poppins", ui-sans-serif, system-ui, -apple-system,
+          "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      }
+      /* Answer fade animation */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .fade-in {
+        animation: fadeIn 260ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+      }
+      @keyframes fadeOut {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+      }
+      .fade-out {
+        animation: fadeOut 260ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+      }
+
+      #answer {
+        position: relative; /* animate filter changes */
+        transition: filter 1000ms ease, -webkit-filter 1000ms ease;
+        padding-top: 0.75rem; /* extra spacing above */
+        padding-bottom: 0.75rem; /* extra spacing below */
+      }
+
+      #answer::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 6, 20, 0.94);
+        pointer-events: none;
+        z-index: 3;
+        opacity: 0;
+        transition: opacity 1000ms ease;
+      }
+
+      .redacted {
+        filter: blur(14px) saturate(0.6) contrast(0.85);
+        -webkit-filter: blur(14px) saturate(0.6) contrast(0.85);
+      }
+      .redacted::after {
+        opacity: 1;
+      }
+
+      #answer.no-transition {
+        transition: none !important;
+        -webkit-transition: none !important;
+      }
+      #answer.no-transition::after {
+        transition: none !important;
+      }
+
+      /* Image container styles */
+      #photoDisplay {
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen bg-gray-900 text-gray-100 flex items-center justify-center p-6"
+  >
+    <main
+      class="w-full max-w-2xl bg-gradient-to-br from-gray-800 to-gray-700/60 shadow-lg rounded-2xl p-6 md:p-10"
+    >
+      <div class="mb-4 text-sm">
+        <a
+          href="../index.html"
+          class="text-gray-300 hover:text-gray-100 hover:underline"
+          aria-label="Go back to homepage"
+          >← Back</a
+        >
+      </div>
+      <header class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl md:text-3xl font-semibold">Photo Round</h1>
+      </header>
+
+      <section class="grid gap-4 md:items-end">
+        <div class="md:col-span-3">
+          <div class="flex items-center gap-4">
+            <div class="flex-1">
+              <select
+                id="trackSelect"
+                class="w-full rounded-lg bg-gray-800 border border-gray-700 text-gray-100 p-3 focus:outline-none focus:ring-2 focus:ring-pink-500"
+              ></select>
+            </div>
+
+            <button
+              id="revealBtn"
+              class="bg-pink-600 hover:bg-pink-500 active:scale-[0.99] text-white rounded-lg px-4 py-3 shadow"
+            >
+              👀 Reveal Answer
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div class="mt-6 flex items-center justify-center">
+        <img
+          id="photoDisplay"
+          src="files/photo1.svg"
+          alt="Photo"
+          class="w-full h-96 object-cover rounded-xl"
+        />
+      </div>
+
+      <div
+        id="answer"
+        class="mt-6 text-center text-4xl md:text-6xl font-bold text-pink-400"
+      ></div>
+
+      <section class="mt-6">
+        <div class="w-full mt-4 flex items-center justify-center gap-3">
+          <button
+            id="prevBtn"
+            class="bg-gray-800 hover:bg-gray-700 text-gray-100 rounded-lg px-4 py-2 shadow flex-1"
+          >
+            ‹ Prev
+          </button>
+          <button
+            id="nextBtn"
+            class="bg-gray-800 hover:bg-gray-700 text-gray-100 rounded-lg px-4 py-2 shadow flex-1"
+          >
+            Next ›
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const select = document.getElementById("trackSelect");
+      const answerBox = document.getElementById("answer");
+      const photoDisplay = document.getElementById("photoDisplay");
+
+      // Photos definition: add new entries here to expand the list
+      const PHOTOS = [
+        { file: "photo1.jpg", title: "Michael Palin" },
+        { file: "photo2.jpg", title: "Bill Gates" },
+        { file: "photo3.jpg", title: "Walt Disney" },
+        { file: "photo4.jpg", title: "Audrey Hepburn" },
+        { file: "photo5.jpg", title: "Al Capone" },
+        { file: "photo6.jpg", title: "Michelle Obama" },
+        { file: "photo7.jpg", title: "Gene Kelly" },
+        { file: "photo8.jpg", title: "Luciano Pavarotti" },
+        { file: "photo9.jpg", title: "Jennifer Lawrence" },
+        { file: "photo10.jpg", title: "Bruce Lee" },
+      ];
+
+      (function populatePhotos() {
+        if (!select) return;
+        select.innerHTML = "";
+        PHOTOS.forEach((p, idx) => {
+          const opt = document.createElement("option");
+          opt.value = p.file;
+          opt.textContent = `Photo ${idx + 1}`;
+          if (p.title) opt.dataset.title = p.title;
+          select.appendChild(opt);
+        });
+        if (select.options.length) select.selectedIndex = 0;
+      })();
+
+      function setPhotoFromSelection() {
+        const opt = select.selectedOptions[0];
+        const file = opt ? opt.value : "";
+        if (file) photoDisplay.src = `files/${file}`;
+        // update answer text (title / credit) and redact
+        redactAnswer(); // Call to redactAnswer function
+      }
+
+      function redactAnswer() {
+        const opt = select.selectedOptions[0];
+        const title = opt ? opt.dataset.title : "";
+        answerBox.innerHTML = `${
+          title ? `<div class="answer-title">${title}</div>` : ""
+        }`;
+        answerBox.classList.add("no-transition");
+        answerBox.classList.remove("fade-in");
+        answerBox.classList.add("redacted");
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() =>
+            answerBox.classList.remove("no-transition")
+          );
+        });
+      }
+
+      function revealAnswerAnimated() {
+        if (!answerBox.classList.contains("redacted")) return;
+        answerBox.classList.remove("redacted");
+      }
+
+      function redactAnswerAnimated() {
+        const opt = select.selectedOptions[0];
+        const title = opt ? opt.dataset.title : "";
+        answerBox.innerHTML = `${
+          title ? `<div class="answer-title">${title}</div>` : ""
+        }`;
+        answerBox.classList.remove("fade-in");
+        answerBox.classList.remove("no-transition");
+        answerBox.classList.add("redacted");
+      }
+
+      // Initial setup
+      setPhotoFromSelection();
+
+      document.getElementById("revealBtn").onclick = (e) => {
+        const btn = e.currentTarget;
+        const isCurrentlyRedacted =
+          answerBox.classList.contains("redacted") ||
+          answerBox.classList.contains("redacting");
+        if (isCurrentlyRedacted) {
+          revealAnswerAnimated();
+          btn.textContent = "🙈 Hide Answer";
+          btn.setAttribute("aria-pressed", "true");
+        } else {
+          redactAnswerAnimated();
+          btn.textContent = "👀 Reveal Answer";
+          btn.setAttribute("aria-pressed", "false");
+        }
+      };
+
+      // (Removed circular open button) — open in new tab by right-click if needed.
+
+      select.addEventListener("change", () => {
+        // Immediately redact the answer and update the image
+        redactAnswer();
+        const revealBtn = document.getElementById("revealBtn");
+        revealBtn.textContent = "👀 Reveal Answer";
+        revealBtn.setAttribute("aria-pressed", "false");
+        setPhotoFromSelection();
+      });
+
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      if (prevBtn)
+        prevBtn.addEventListener("click", () => {
+          const len = select.options.length;
+          if (!len) return;
+          select.selectedIndex = (select.selectedIndex - 1 + len) % len;
+          select.dispatchEvent(new Event("change"));
+        });
+      if (nextBtn)
+        nextBtn.addEventListener("click", () => {
+          const len = select.options.length;
+          if (!len) return;
+          select.selectedIndex = (select.selectedIndex + 1) % len;
+          select.dispatchEvent(new Event("change"));
+        });
+    </script>
+  </body>
+</html>
