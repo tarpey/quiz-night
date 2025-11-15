@@ -109,7 +109,7 @@
 
       <section class="grid gap-4 md:items-end">
         <div class="md:col-span-3">
-          <div class="flex items-center gap-4">
+          <div class="flex flex-wrap items-center gap-4">
             <button
               id="playBtn"
               class="bg-pink-600 hover:bg-pink-500 active:scale-[0.99] text-white rounded-full w-12 h-12 flex items-center justify-center shadow"
@@ -130,7 +130,7 @@
 
             <button
               id="revealBtn"
-              class="bg-pink-600 hover:bg-pink-500 active:scale-[0.99] text-white rounded-lg px-4 py-3 shadow"
+              class="bg-pink-600 hover:bg-pink-500 active:scale-[0.99] text-white rounded-lg px-4 py-3 shadow w-full sm:w-auto mt-3 sm:mt-0"
             >
               👀 Reveal Answer
             </button>
@@ -140,7 +140,7 @@
 
       <div
         id="answer"
-        class="mt-6 text-center text-2xl md:text-3xl font-bold text-pink-400"
+        class="mt-6 text-center text-6xl md:text-4xl font-bold text-pink-400"
       ></div>
 
       <!-- Playback progress + simple equalizer -->
@@ -279,8 +279,8 @@
         const title = opt ? opt.dataset.title : "";
         const artist = opt ? opt.dataset.artist : "";
         // Show title on one line and artist below it
-        answerBox.innerHTML = `${title ? `<div class="answer-title">${title}</div>` : ''}` +
-          `${artist ? `<div class="answer-artist text-sm text-gray-300">${artist}</div>` : ''}`;
+        answerBox.innerHTML = `${title ? `<div class="answer-title mb-4">${title}</div>` : ''}` +
+          `${artist ? `<div class="answer-artist text-4xl text-gray-300">${artist}</div>` : ''}`;
         // clear any reveal animation classes and apply redaction immediately
         // disable transitions briefly so the redaction is instant on load
         answerBox.classList.add('no-transition');
